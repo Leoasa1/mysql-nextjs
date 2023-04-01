@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { useRegister } from '../../src/auth/useRegister';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 
 const Register = () => {
 	const [username, setUserName] = useState('');
@@ -9,20 +9,33 @@ const Register = () => {
 	const [lastName, setLastName] = useState('');
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
+	const [confirmPass, setConfirmPass] = useState('');
 	const router = useRouter();
 
 	const { register } = useRegister();
 
-	const onSubmit = () => {
-		if (!username || !password || !firstName || !lastName || !email) {
+	const onSubmit = (e: any) => {
+		e.preventDefault();
+		if (
+			!username ||
+			!password ||
+			!confirmPass ||
+			!firstName ||
+			!lastName ||
+			!email
+		) {
 			toast.error('Please enter information');
 		} else {
+			if (password !== confirmPass) {
+				toast.error("Passwords Don't Match");
+				return;
+			}
 			register(username, firstName, lastName, email, password)
 				.then((data) => {
 					if (data.hasOwnProperty('errors')) {
 						toast.error(data.errors);
 					} else {
-						router.push('/account/profile');
+						router.push('/auth');
 					}
 				})
 				.catch((e) => alert(e));
@@ -31,10 +44,15 @@ const Register = () => {
 
 	return (
 		<div className='hero min-h-screen bg-base-200'>
-			<ToastContainer theme='colored' position='top-center' />
 			<div className='hero-content text-center grid'>
-				<h1 className='text-5xl font-bold mb-5'>Register Now!</h1>
-				<div className='card flex-shrink-0 w-full w-96 shadow-2xl bg-base-100'>
+				<h1 className='text-5xl font-bold'>Register Now!</h1>
+				<p className='text-xl'>
+					Why did the SQL query go to the bar? To join tables.
+				</p>
+				<form
+					onSubmit={onSubmit}
+					className='card flex-shrink-0 w-full w-96 shadow-2xl bg-base-100'
+				>
 					<div className='card-body'>
 						<div className='grid grid-cols-2 gap-4'>
 							<div className='form-control'>
@@ -106,16 +124,27 @@ const Register = () => {
 								className='input input-bordered'
 							/>
 						</div>
+						<div className='form-control'>
+							<label className='label'>
+								<span className='label-text'>
+									Confirm Password
+								</span>
+							</label>
+							<input
+								value={confirmPass}
+								onChange={(e) => setConfirmPass(e.target.value)}
+								type='password'
+								placeholder='confirm password'
+								className='input input-bordered'
+							/>
+						</div>
 						<div className='form-control mt-6'>
-							<button
-								onClick={() => onSubmit()}
-								className='btn btn-secondary'
-							>
+							<button type='submit' className='btn btn-secondary'>
 								Submit
 							</button>
 						</div>
 					</div>
-				</div>
+				</form>
 			</div>
 		</div>
 	);

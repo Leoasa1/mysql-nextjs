@@ -19,6 +19,6 @@ export function middleware(request: NextRequest) {
 	}
 
 	if (authRoutes.includes(request.nextUrl.pathname) && currentUser) {
-		return NextResponse.redirect(new URL('/account/profile', request.url));
+		return NextResponse.redirect(new URL('/auth', request.url));
 	}
 }

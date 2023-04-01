@@ -1,21 +1,9 @@
-import { useEffect } from 'react';
 import Link from 'next/link';
-import { useCurrentUser } from '../src/auth/useCurrentUser';
-import { useRouter } from 'next/router';
 
 export default function Web() {
-	const { user: currentUser } = useCurrentUser();
-	const router = useRouter();
-
-	useEffect(() => {
-		if (currentUser) {
-			router.push('/account/profile');
-		}
-	}, [currentUser]);
-
 	return (
 		<div className='hero min-h-screen bg-base-200'>
-			<div className='hero-content text-center'>
+			<div className='hero-content text-center grid'>
 				<div className='max-w-md'>
 					<h1 className='text-5xl font-bold'>MySQL Project</h1>
 					<p className='py-6'>
@@ -34,6 +22,9 @@ export default function Web() {
 							Login
 						</Link>
 					</div>
+				</div>
+				<div className='py-10'>
+					<h2 className='text-xl'>Created By - Leo Asadourian</h2>
 				</div>
 			</div>
 		</div>

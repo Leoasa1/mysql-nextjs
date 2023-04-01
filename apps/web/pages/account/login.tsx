@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { useLogin } from '../../src/auth/useLogin';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 
 const Login = () => {
 	const [username, setUserName] = useState('');
@@ -19,7 +19,7 @@ const Login = () => {
 					if (data.hasOwnProperty('errors')) {
 						toast.error(data.errors);
 					} else {
-						router.push('/account/profile');
+						router.push('/auth');
 					}
 				})
 				.catch((e) => toast.error(e));
@@ -28,11 +28,10 @@ const Login = () => {
 
 	return (
 		<div className='hero min-h-screen bg-base-200'>
-			<ToastContainer theme='colored' position='top-center' />
-			<div className='hero-content flex-col lg:flex-row-reverse max-w-3xl'>
+			<div className='hero-content flex-col lg:flex-row-reverse max-w-3xl gap-10'>
 				<div className='text-center lg:text-left'>
 					<h1 className='text-5xl font-bold'>Welcome Back!</h1>
-					<p className='py-6'>
+					<p className='text-xl py-6'>
 						Why did the SQL query break up with the NoSQL database?
 						Because it couldn&lsquo;t JOIN the party!
 					</p>
