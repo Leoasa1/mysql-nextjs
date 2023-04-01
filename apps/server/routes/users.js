@@ -27,13 +27,12 @@ router.post(
 
 		try {
 			// Check if user already exists
-			const promisePool = connectDB.promise();
-			const [rows] = await promisePool.execute(
-				'SELECT * FROM user WHERE (username, email) = (?, ?)',
+			const [rows] = await connectDB.execute(
+				'SELECT * FROM user WHERE username = ? OR email = ?',
 				[username, email]
 			);
 			if (rows.length > 0) {
-				return res.status(400).json({ errors: 'Invalid credentials' });
+				return res.status(409).json({ errors: 'User Already Exists' });
 			}
 
 			// Hash password
@@ -41,13 +40,16 @@ router.post(
 			const hashedPassword = await bcrypt.hash(password, salt);
 
 			// Insert user into database
-			await promisePool.execute(
+			await connectDB.execute(
 				'INSERT INTO user (username, password, firstName, lastName, email) VALUES (?, ?, ?, ?, ?)',
 				[username, hashedPassword, firstName, lastName, email]
 			);
 
 			// Generate JWT token
-			const token = jwt.sign({ username }, 'secret_key');
+			const token = jwt.sign(
+				{ username },
+				'KprVapS2t3g0bxJBu8iemo3xKNB9A0'
+			);
 
 			// Return registered user's information and token
 			res.status(201).json({
@@ -69,15 +71,16 @@ router.post(
 	[check('password', 'Password is required').exists()],
 	async (req, res) => {
 		const errors = validationResult(req);
+		// validate if values are empty
 		if (!errors.isEmpty()) {
 			return res.status(400).json({
 				errors: errors.array(),
 			});
 		}
+		// create a connect to sql-db and check for username
 		const { username, password } = req.body;
-		const promisePool = connectDB.promise();
 		try {
-			const [rows] = await promisePool.execute(
+			const [rows] = await connectDB.execute(
 				'SELECT * FROM user WHERE username = ?',
 				[username]
 			);
@@ -88,22 +91,24 @@ router.post(
 
 			const user = rows[0];
 
+			// check if password matches after dycrption
 			const isMatch = await bcrypt.compare(password, user.password);
-
 			if (!isMatch) {
 				return res.status(401).json({ errors: 'Invalid credentials' });
 			}
 
+			// respond with user info
 			const payload = {
-				user: {
-					id: user.id,
-				},
+				username: user.username,
+				firstName: user.firstName,
+				lastName: user.lastName,
+				email: user.email,
 			};
 
 			jwt.sign(
 				payload,
-				'secret_key',
-				{ expiresIn: '1h' },
+				'KprVapS2t3g0bxJBu8iemo3xKNB9A0',
+				{ expiresIn: '10h' },
 				(err, token) => {
 					if (err) throw err;
 					res.json({
@@ -111,7 +116,7 @@ router.post(
 						firstName: user.firstName,
 						lastName: user.lastName,
 						email: user.email,
-						token,
+						token: token,
 					});
 				}
 			);
@@ -121,17 +126,5 @@ router.post(
 		}
 	}
 );
-
-// Protect routes that require authentication
-// router.get('/protected', (req, res) => {
-// 	const token = req.headers.authorization?.split(' ')[1];
-// 	try {
-// 		const decoded = jwt.verify(token, 'secret_key');
-// 		const username = decoded.username;
-// 		// ...
-// 	} catch (error) {
-// 		res.status(401).send('Unauthorized');
-// 	}
-// });
 
 module.exports = router;
